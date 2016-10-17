@@ -118,12 +118,7 @@ var div = document.createElement("div");
     div.style.height = window.innerHeight + "px";
     div.style.overflow = "hidden";
    
-var canvas = document.createElement("canvas");
-div.appendChild(canvas);
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-var ctx = canvas.getContext("2d");
-document.body.appendChild(div);
+
 
 function scene(x,y,width,height){
     this.width = width;
@@ -132,10 +127,14 @@ function scene(x,y,width,height){
     this.y = y;
 }
 for (var i = 0; i < 9; i++) {
-    var s = new scene(0,0,window.innerWidth/3,window.innerHeight/3);
-    s.x = s.width*(i%3);
-    s.y = s.height* Math.floor(i/3);
-    var drawer = new Drawer(elle,ctx,{x:s.x + s.width/2,y:s.y + s.height -20},Math.PI/10,.2);
+    var canvas = document.createElement("canvas");
+    div.appendChild(canvas);
+    canvas.width = window.innerWidth/3;
+    canvas.height = window.innerHeight/3;
+    var ctx = canvas.getContext("2d");
+    document.body.appendChild(div);
+
+    var drawer = new Drawer(elle,ctx,{x:canvas.width/2,y:canvas.height -20},Math.PI/10,.2);
 
     drawer.draw();
 }
