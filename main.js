@@ -96,18 +96,10 @@ Drawer.prototype.draw = function(){
     for (var i = 0; i < this.l.output.length; i++) {
         
         if(this.drawingFunctions[this.l.output[i]] == undefined) continue;
-        
-        setTimeout((function(i){
-            
-           return function(){
-               //console.log(this.l.output[i]);
-               this.drawingFunctions[this.l.output[i]].call(this);
-               }.bind(this);
-        }.bind(this))(i),index);
-        index +=0.1;
+        this.drawingFunctions[this.l.output[i]].call(this);
+
     }
 }
-
 
 
 var elle = new l();
@@ -116,34 +108,41 @@ elle.addconstants("+-[]");
 elle.axiom = "X";
 elle.addRule("X","F-[[X]+X]+F[+FX]-X");
 elle.addRule("F","FF");
-elle.generate(6);
+elle.generate(5);
 
 
-var canvases = [];
 
 var div = document.createElement("div");
-
     div.style.position = "static";
     div.style.width = window.innerWidth + "px";
     div.style.height = window.innerHeight + "px";
     div.style.overflow = "hidden";
+   
+var canvas = document.createElement("canvas");
+div.appendChild(canvas);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+var ctx = canvas.getContext("2d");
 document.body.appendChild(div);
-for (var i = 0; i < 9; i++) {
-    
-    
-    canvases.push(document.createElement("canvas"));
-    var canvas = canvases[i];
-    
-    
-    canvas.width = window.innerWidth/3;
-    canvas.height = window.innerHeight/3;
-    div.appendChild(canvas);
 
-    var ctx = canvas.getContext("2d");
-    var drawer = new Drawer(elle,ctx,{x:canvas.width/2,y:canvas.height -20},Math.PI/10,.2);
+function scene(x,y,width,height){
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+}
+for (var i = 0; i < 9; i++) {
+    var s = new scene(0,0,window.innerWidth/3,window.innerHeight/3);
+    s.x = s.width*(i%3);
+    s.y = s.height* Math.floor(i/3);
+    var drawer = new Drawer(elle,ctx,{x:s.x + s.width/2,y:s.y + s.height -20},Math.PI/10,.2);
+
     drawer.draw();
 }
-
 document.body.style.margin = 0;
-
+//TODO : investigate coroutines;
+(function loop(time){
+    
+    requestAnimationFrame(loop);
+})();
 
