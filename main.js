@@ -8,7 +8,7 @@ function l(){
     this.axiom;
     this.rules = [];
     
-    this.output;
+    this.output = "";
 }
 
 l.prototype.generate = function(iterations){
@@ -85,21 +85,20 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.jitter = jitter;
     this.done = false;
     
-    
+    this.buffer = [];
+    this.lineLength = 2;
     this.currentDrawIndex = 0;
     
     this.drawingFunctions = {
         "F" : () => {
             
-            this.ctx.strokeStyle = "rgba(0,0,0,.3)";
             
-            //this.ctx.beginPath();
-            this.ctx.moveTo(this.position.x,this.position.y);
-            this.position.x = this.position.x + Math.cos(this.direction) *2;
-            this.position.y = this.position.y + Math.sin(this.direction) *2;
             
-            this.ctx.lineTo(this.position.x,this.position.y);
-            //this.ctx.stroke()
+            
+            this.buffer.push({x:this.position.x,y:this.position.y});
+            this.position.x = this.position.x + Math.cos(this.direction) *this.lineLength;
+            this.position.y = this.position.y + Math.sin(this.direction) *this.lineLength;
+            this.buffer.push({x:this.position.x,y:this.position.y});
         },
         "+" : () => {
             this.direction += this.angle + (Math.random()*2 -1)*this.jitter;
@@ -109,36 +108,47 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
             this.direction -= this.angle + (Math.random()*2 -1)*this.jitter;
             },
         "[" : () => {
-            this.savedPosition.push(
-                {pos:{x:this.position.x,y:this.position.y},dir:this.direction});
+            this.savedPosition.push({pos:{x:this.position.x,y:this.position.y},dir:this.direction});
                 
         },
         "]" : () => {
-            var saved = this.savedPosition.pop();
             
-            if(saved != null){
+            if(this.savedPosition.length == 0){
+             // console.log("non pop");
+              return
+              
+            } 
+            
+            var saved = this.savedPosition.pop();
+        
+            
                 
                 this.position = saved.pos;
                 this.direction = saved.dir;
                 
-            }
+            
         },
     }
 }
 Drawer.prototype.reset = function(){
     this.done = false;
     this.currentDrawIndex = 0;
-    
+    this.buffer = [];
+    this.savedPosition = [];
     this.direction = this.startArgument.dir;
     this.position.x = this.startArgument.pos.x;
     this.position.y = this.startArgument.pos.y;
     
 }
 Drawer.prototype.draw = function(nb){
-    
+   this.reset();
+   
+   
+   
+    if(this.l.output.length == 0) return;
     var nbOfDrawActions = 0;
     
-    for (var i = this.currentDrawIndex; i < this.l.output.length; i++) {
+    for (var i = 0; i < this.l.output.length; i++) {
         
         if(this.drawingFunctions[this.l.output[i]] == undefined) continue;
         
@@ -147,13 +157,13 @@ Drawer.prototype.draw = function(nb){
         this.drawingFunctions[this.l.output[i]].call(this);
         nbOfDrawActions ++;
         
-        if(nbOfDrawActions >= nb)
-        {
-            this.currentDrawIndex = i+1;
-            return;
-        }
+        // if(nbOfDrawActions >= nb)
+        // {
+        //     this.currentDrawIndex = i+1;
+        //     return;
+        // }
     }
-    this.done = true;
+    //this.done = true;
 }
 
 
@@ -163,16 +173,32 @@ elle.addconstants("+-[]");
 elle.axiom = "X";
 elle.addRule("X","F-[[X]+X]+F[+FX]-X");
 elle.addRule("F","FF");
-//elle.generate(6);
+elle.generate(5);
+var div;
 
-
-
-var div = document.createElement("div");
+function initDom(){
+    div = document.createElement("div");
     div.style.position = "static";
     div.style.width = window.innerWidth + "px";
     div.style.height = window.innerHeight + "px";
     div.style.overflow = "hidden";
-   
+    document.body.style.margin = 0;
+    document.body.appendChild(div);
+
+}
+
+initDom(); 
+
+function resize(){
+    div.style.width = window.innerWidth + "px";
+    div.style.height = window.innerHeight + "px";
+    
+     for (var i = 0; i < drawerList.length; i++) {
+     
+         drawerList[i].ctx.canvas.width = window.innerWidth/3;
+         drawerList[i].ctx.canvas.height = window.innerHeight/3;
+     }
+}
 
 
 function scene(x,y,width,height){
@@ -181,64 +207,128 @@ function scene(x,y,width,height){
     this.x = x;
     this.y = y;
 }
-
+var numberofDrawers = 9;
 var drawerList = []
 
-var canvasList = []
-
-for (var i = 0; i < 9; i++) {
+for (var i = 0; i < numberofDrawers; i++) {
     var canvas = document.createElement("canvas");
     div.appendChild(canvas);
-    canvasList.push(canvas);
-    canvas.width = window.innerWidth/3;
-    canvas.height = window.innerHeight/3;
+    canvas.width = window.innerWidth/Math.sqrt(numberofDrawers);
+    canvas.height = window.innerHeight/Math.sqrt(numberofDrawers);
     var ctx = canvas.getContext("2d");
-    document.body.appendChild(div);
-    
-    var clone = elle.clone();
-    clone.mutate();
-    clone.generate(6);
-    
-    var drawer = new Drawer(clone,ctx,{x:canvas.width/2,y:canvas.height/2},Math.PI/5,0);
+    var drawer = new Drawer(elle,ctx,{x:canvas.width/2,y:canvas.height/2},Math.PI/5,0);
     drawerList.push(drawer);
+ 
 }
 
-
-function clickCanvas(index){
+function mutateFromModel(baseSystem)
+{
     
-    console.log(drawerList[index].l.rules["X"]);
-    var newL = drawerList[index].l.clone();
+    //console.log("///////");
+    
     for (var i = 0; i < drawerList.length; i++) {
-         var changedL = newL.clone();
-         changedL.mutate();
-         drawerList[i].l = changedL;
-         drawerList[i].reset();
-         changedL.generate(6);
-         
-         
-         canvasList[i].width = canvasList[i].width;
+        var clone = baseSystem.clone();
+        clone.mutate();
+        clone.generate(5);
+        
+       // console.log(clone.rules["X"]);
+        
+        drawerList[i].l = clone;
+        drawerList[i].reset();
+        drawerList[i].ctx.canvas.width = drawerList[i].ctx.canvas.width;
     }
     
 }
 
-for (var i = 0; i < canvasList.length; i++) {
-    canvasList[i].onclick = (function(i){
+function clickCanvas(index){
+    elle = drawerList[index].l.clone();
+    mutateFromModel(elle);
+}
+
+for (var i = 0; i < document.querySelectorAll("canvas").length; i++) {
+    document.querySelectorAll("canvas")[i].onclick = (function(i){
         return function(){clickCanvas(i)};
     })(i)
 }
 
-
-document.body.style.margin = 0;
-(function loop(time){
+function ui(){
+    this.angle = document.createElement("input");
+    this.angle.type = "range";
+    this.angle.style.position = "absolute";
+    this.angle.style.top = "10px";
+    this.angle.min = -Math.PI;
+    this.angle.max = Math.PI;
+    this.angle.step = 0.001;
+    this.angle.value = Math.pi/8;
     
+    
+    this.length = document.createElement("input");
+    this.length.type = "range";
+    this.length.style.position = "absolute";
+    this.length.style.top = "50px";
+    
+    this.length.min = 0.0;
+    this.length.max = 10;
+    this.length.step = 0.001;
+    
+    document.body.appendChild(this.angle);
+    document.body.appendChild(this.length);
+    
+}
+
+var u = new ui();
+
+
+
+(function loop(time){
+    var shittodrawlength = 0;
     for (var i = 0; i < drawerList.length; i++) {
+        
+        
+        //update UI
+         
+        drawerList[i].angle = parseFloat(u.angle.value);
+        drawerList[i].lineLength = parseFloat(u.length.value);
+        
+        //compute what to draw
+        
         if(!drawerList[i].done)
         {
-           drawerList[i].ctx.beginPath();
-           drawerList[i].draw(10);
-           drawerList[i].ctx.stroke();
+           
+            drawerList[i].draw(10);
+              
         }
+        
+        
+        //draw shits
+        drawerList[i].ctx.canvas.width =drawerList[i].ctx.canvas.width;
+        drawerList[i].ctx.beginPath();
+        drawerList[i].ctx.strokeStyle = "rgba(0,0,0,.2)";
+        
+        
+        shittodrawlength += drawerList[i].buffer.length;
+        
+            for (var j = 0; j < drawerList[i].buffer.length; j+=2) {
+               var pos = drawerList[i].buffer[j];
+               drawerList[i].ctx.moveTo(pos.x,pos.y);
+               pos = drawerList[i].buffer[j+1];
+               drawerList[i].ctx.lineTo(pos.x,pos.y);
+            }
+               
+        drawerList[i].ctx.stroke();
+        
+         
     }
+    
+    
+  // console.log(shittodrawlength);
+    
     requestAnimationFrame(loop);
 })();
 
+
+
+
+window.onresize = resize;
+
+mutateFromModel(elle);
