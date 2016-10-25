@@ -73,7 +73,7 @@ l.prototype.mutate = function(){
 
 function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.l = lSystem;
-    
+    this.cameraPos = {x:0,y:0};
     
     this.startArgument = {pos :{x:startpos.x,y:startpos.y}, dir : -Math.PI /2};
     
@@ -89,16 +89,24 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.lineLength = 2;
     this.currentDrawIndex = 0;
     
+    //drag move parameters
+    this.mouseDown = false;
+    this.clickPosition;
+    
+    this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
+    this.ctx.canvas.addEventListener("mousemove",this.onMouseMove.bind(this));
+    window.addEventListener("mouseup",this.onMouseUp.bind(this));
+    
     this.drawingFunctions = {
         "F" : () => {
             
             
             
             
-            this.buffer.push({x:this.position.x,y:this.position.y});
+            this.buffer.push({x:this.cameraPos.x + this.position.x,y:this.cameraPos.y + this.position.y});
             this.position.x = this.position.x + Math.cos(this.direction) *this.lineLength;
             this.position.y = this.position.y + Math.sin(this.direction) *this.lineLength;
-            this.buffer.push({x:this.position.x,y:this.position.y});
+            this.buffer.push({x:this.cameraPos.x + this.position.x,y:this.cameraPos.y + this.position.y});
         },
         "+" : () => {
             this.direction += this.angle + (Math.random()*2 -1)*this.jitter;
@@ -140,6 +148,27 @@ Drawer.prototype.reset = function(){
     this.position.y = this.startArgument.pos.y;
     
 }
+
+
+Drawer.prototype.onClick = function(e){
+    this.clickPosition = {x:e.clientX,y:e.clientY};
+    this.mouseDown = true;
+
+}
+Drawer.prototype.onMouseMove = function(e){
+    if(this.mouseDown)
+    {
+        this.cameraPos.x += e.clientX - this.clickPosition.x;
+        this.cameraPos.y += e.clientY - this.clickPosition.y;
+        this.clickPosition = {x:e.clientX,y:e.clientY};
+    }
+}
+
+Drawer.prototype.onMouseUp = function(e){
+    console.log("true");
+    this.mouseDown = false;
+}
+
 Drawer.prototype.draw = function(nb){
    this.reset();
    
@@ -177,14 +206,9 @@ elle.generate(5);
 var div;
 
 function initDom(){
-    div = document.createElement("div");
-    div.style.position = "static";
+    div = document.querySelector(".canvases");
     div.style.width = window.innerWidth + "px";
     div.style.height = window.innerHeight + "px";
-    div.style.overflow = "hidden";
-    document.body.style.margin = 0;
-    document.body.appendChild(div);
-
 }
 
 initDom(); 
@@ -240,45 +264,68 @@ function mutateFromModel(baseSystem)
     
 }
 
-function clickCanvas(index){
-    elle = drawerList[index].l.clone();
-    mutateFromModel(elle);
-}
+// function clickCanvas(index){
+//     elle = drawerList[index].l.clone();
+//     mutateFromModel(elle);
+// }
 
-for (var i = 0; i < document.querySelectorAll("canvas").length; i++) {
-    document.querySelectorAll("canvas")[i].onclick = (function(i){
-        return function(){clickCanvas(i)};
-    })(i)
-}
+// for (var i = 0; i < document.querySelectorAll("canvas").length; i++) {
+//     document.querySelectorAll("canvas")[i].onclick = (function(i){
+//         return function(){clickCanvas(i)};
+//     })(i)
+// }
 
 function ui(){
+    
+    this.container = document.querySelector(".options");
+    
     this.angle = document.createElement("input");
     this.angle.type = "range";
-    this.angle.style.position = "absolute";
-    this.angle.style.top = "10px";
+   // this.angle.style.position = "absolute";
+
     this.angle.min = -Math.PI;
     this.angle.max = Math.PI;
     this.angle.step = 0.001;
-    this.angle.value = Math.pi/8;
-    
+    this.angle.value = Math.PI /5;
+    console.log(this.angle.value);
+
     
     this.length = document.createElement("input");
     this.length.type = "range";
-    this.length.style.position = "absolute";
-    this.length.style.top = "50px";
+   // this.length.style.position = "absolute";
+
     
     this.length.min = 0.0;
     this.length.max = 10;
     this.length.step = 0.001;
     
-    document.body.appendChild(this.angle);
-    document.body.appendChild(this.length);
+    this.container.appendChild(this.angle);
+    this.container.appendChild(this.length);
+    
     
 }
 
 var u = new ui();
 
 
+// function Plant(lsys,drawer){
+//     this.l = lsys;
+//     this.drawer = drawer;
+    
+//     console.log("create");
+//     this.drawer.ctx.canvas.addEventListener("click",this.onclick);
+    
+// }
+
+// Plant.prototype.onclick = function(){
+//     console.log("click");
+// };
+
+// var plantList = []
+
+// for (var i = 0; i < drawerList.length; i++) {
+//     plantList.push(new Plant(drawerList[i].l,drawerList[i]));
+// }
 
 (function loop(time){
     var shittodrawlength = 0;
@@ -324,7 +371,7 @@ var u = new ui();
   // console.log(shittodrawlength);
     
     requestAnimationFrame(loop);
-})();
+})(0);
 
 
 
