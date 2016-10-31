@@ -1,0 +1,22 @@
+{
+  "name": "elle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "devDependencies": {
+    "watchify": "^3.7.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ragekit/elle.git"
+  },
+  "author": "Ragekit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ragekit/elle/issues"
+  },
+  "homepage": "https://github.com/ragekit/elle#readme"
+}
