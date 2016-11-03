@@ -2,7 +2,7 @@ function Ui(){
     
     this.container = document.querySelector(".options");
     
-    this.angle = document.createElement("input");
+    this.angle = document.querySelector(".angle");
     this.angle.type = "range";
    // this.angle.style.position = "absolute";
 
@@ -12,8 +12,7 @@ function Ui(){
     this.angle.value = Math.PI /5;
     console.log(this.angle.value);
 
-    
-    this.length = document.createElement("input");
+    this.length = document.querySelector(".length");
     this.length.type = "range";
    // this.length.style.position = "absolute";
 
@@ -22,10 +21,7 @@ function Ui(){
     this.length.max = 10;
     this.length.step = 0.001;
     
-    this.container.appendChild(this.angle);
-    this.container.appendChild(this.length);
-    
-    
+   
 }
 
 module.exports =  Ui;

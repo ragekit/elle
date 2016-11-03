@@ -1,4 +1,8 @@
+var lol = 0;
+
 function L(){
+    this.id = lol;
+    lol++;
     this.variables = [];
     this.constants = [];
     this.axiom;
@@ -20,7 +24,6 @@ L.prototype.generate = function(iterations){
             
             temp += letter;
         }
-        
         this.output = temp;
         temp = "";
     }
@@ -44,10 +47,16 @@ L.prototype.addRule = function(from,to){
 
 L.prototype.clone = function(){
     var ret = new L();
-    ret.variables = this.variables;
-    ret.constants = this.constants;
-    ret.rules = this.rules;
-    ret.axiom = this.axiom;
+    ret.variables = this.variables.slice();
+    ret.constants = this.constants.slice();
+    
+    for(var key in this.rules)
+    {
+        ret.rules[key] = this.rules[key];
+    }
+    
+    ret.axiom = this.axiom.slice();
+
     return ret;
 }
 

@@ -9,6 +9,13 @@
             .canvases{
                 margin:0;
                 padding:0;
+                height : 100vh;
+                width: calc(100vw - 200px);
+            }
+            
+            .canvases canvas {
+                position:absolute;
+                box-sizing: border-box;
             }
             
             .options{
@@ -17,31 +24,45 @@
                 right:0;
                 top : 0 ;
                 height : 100vh;
-                
+                z-index : 10;
+                width: 200px;
             }
             
             .options input{
                 display:block;
                 
             }
+            .selected {
+                outline: black 50px solid;
+                z-index : 5;
+           
+            }
+            
+            body{
+                overflow:hidden;
+            }
         </style>
         
     </head>
     <body>
         <div class="canvases">
-            
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
+            <canvas></canvas>
         </div>
+        
         <div class="options">
-            
-            
-            <div class = "plantInfos">
-                
+           <input class="length"></input>
+            <input class="angle"></input>
+            <div class = "plantInfos">            
             </div>
-            
         </div>
-        
-        
     <script type="text/javascript" src="app.js"></script>    
     </body>
-    
 </html>

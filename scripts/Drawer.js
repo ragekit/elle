@@ -75,8 +75,7 @@ Drawer.prototype.reset = function(){
 
 Drawer.prototype.onClick = function(e){
     this.clickPosition = {x:e.clientX,y:e.clientY};
-    this.mouseDown = true;
-
+    this.mouseDown = true;    
 }
 Drawer.prototype.onMouseMove = function(e){
     if(this.mouseDown)
@@ -88,7 +87,6 @@ Drawer.prototype.onMouseMove = function(e){
 }
 
 Drawer.prototype.onMouseUp = function(e){
-    console.log("true");
     this.mouseDown = false;
 }
 

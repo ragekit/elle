@@ -10,11 +10,12 @@ String.prototype.setCharAt = function(index, character) {
 
 var elle = new L();
 var div;
-var numberofDrawers = 9;
 var drawerList = [];
 var u = new Ui();
 
 var maxIteration = 5;
+
+var plantInfos = document.querySelector(".plantInfos");
 
 function init(){
     elle.addVariables("XF");
@@ -25,31 +26,37 @@ function init(){
     elle.generate(maxIteration);
     
     div = document.querySelector(".canvases");
-    div.style.width = window.innerWidth + "px";
-    div.style.height = window.innerHeight + "px";
+   
+    var canvases = div.querySelectorAll("canvas"); 
     
-    for (var i = 0; i < numberofDrawers; i++) {
-        var canvas = document.createElement("canvas");
-        div.appendChild(canvas);
-        canvas.width = window.innerWidth/Math.sqrt(numberofDrawers);
-        canvas.height = window.innerHeight/Math.sqrt(numberofDrawers);
-        var ctx = canvas.getContext("2d");
-        var drawer = new Drawer(elle,ctx,{x:canvas.width/2,y:canvas.height/2},Math.PI/5,0);
+    for (var i = 0; i < canvases.length; i++) {
+        var c = canvases[i]
+        
+        var ctx = c.getContext("2d");
+        var drawer = new Drawer(elle,ctx,{x:c.width/2,y:c.height/2},Math.PI/5,0);
         drawerList.push(drawer);
+        ctx.canvas.addEventListener("mousedown",onDrawerMouseClick.bind(drawer))     
     }
-    
-    
+    resize();
     mutateFromModel(elle);
 }
 
 function resize(){
-    div.style.width = window.innerWidth + "px";
-    div.style.height = window.innerHeight + "px";
+    
+    var containerBB = div.getBoundingClientRect();
+  
     
      for (var i = 0; i < drawerList.length; i++) {
-     
-         drawerList[i].ctx.canvas.width = window.innerWidth/3;
-         drawerList[i].ctx.canvas.height = window.innerHeight/3;
+        var c = drawerList[i].ctx.canvas;
+        var flooredSqrt = Math.sqrt(drawerList.length);
+         
+        var defaultWidth = Math.floor(containerBB.width/flooredSqrt);
+        var defaultHeight = Math.floor(containerBB.height/flooredSqrt);
+        
+         c.width = defaultWidth;
+         c.height = defaultHeight;
+         c.style.left = (defaultWidth * (i%flooredSqrt)) + "px";
+         c.style.top = (defaultHeight * Math.floor(i/flooredSqrt)) + "px";
      }
 }
 
@@ -63,9 +70,14 @@ function mutateFromModel(baseSystem)
         
 
         drawerList[i].l = clone;
+
+        console.log(drawerList[i].l.rules);
+
         drawerList[i].reset();
         drawerList[i].ctx.canvas.width = drawerList[i].ctx.canvas.width;
     }
+    
+    console.log("//");
     
 }
 
@@ -77,11 +89,31 @@ function mutateFromModel(baseSystem)
         drawerList[i].lineLength = parseFloat(u.length.value);
         
         drawerList[i].draw();
-        
     }
     requestAnimationFrame(loop);
 })(0);
 
+
+function onDrawerMouseClick(){
+    for (var i = 0; i < drawerList.length; i++) {
+        drawerList[i].ctx.canvas.classList.remove("selected");
+       // console.log(drawerList[i].l.rules);
+        
+    }
+    this.ctx.canvas.classList.add("selected");
+   // console.log(this.l.rules);
+    
+  //  this.ctx.canvas.width -= 50; 
+//     this.ctx.canvas.height -= 50; 
+     plantInfos.innerHTML = "";
+    //move to lsystem method;
+    for(var i in this.l.rules){
+        plantInfos.innerHTML += i + "<br/>";
+        plantInfos.innerHTML += this.l.rules[i] +"<br/>";
+        
+    }
+   
+}
 
 
 
