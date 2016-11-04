@@ -76,9 +76,6 @@ function mutateFromModel(baseSystem)
         drawerList[i].reset();
         drawerList[i].ctx.canvas.width = drawerList[i].ctx.canvas.width;
     }
-    
-    console.log("//");
-    
 }
 
 (function loop(time){
