@@ -2,13 +2,18 @@
   "name": "elle",
   "version": "1.0.0",
   "description": "",
-    "scripts":{
-        "sync": "browser-sync start --server --files *",
-        "watchify": "watchify src/Main.js -o app.js --debug",
-        "start": "npm run watchify | npm run sync"
-    },
+  "scripts": {
+    "sync": "browser-sync start --server --files *",
+    "watchify": "watchify src/Main.js -o app.js --debug",
+    "start": "npm run watchify | npm run sync"
+  },
   "devDependencies": {
-      
+    "browser-sync": "^2.17.5",
+    "browserify": "^13.1.1",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   },
   "repository": {
     "type": "git",
