@@ -1,6 +1,6 @@
 var L = require("./L");
 var Drawer = require("./Drawer");
-var Ui = require("./Ui");
+//var Ui = require("./Ui");
 
 
 String.prototype.setCharAt = function(index, character) {
@@ -11,7 +11,6 @@ String.prototype.setCharAt = function(index, character) {
 var elle = new L();
 var div;
 var drawerList = [];
-var u = new Ui();
 
 var maxIteration = 5;
 
@@ -71,7 +70,6 @@ function mutateFromModel(baseSystem)
 
         drawerList[i].l = clone;
 
-        console.log(drawerList[i].l.rules);
 
         drawerList[i].reset();
         drawerList[i].ctx.canvas.width = drawerList[i].ctx.canvas.width;
@@ -82,8 +80,8 @@ function mutateFromModel(baseSystem)
     var shittodrawlength = 0;
     for (var i = 0; i < drawerList.length; i++) {
         //update UI
-        drawerList[i].angle = parseFloat(u.angle.value);
-        drawerList[i].lineLength = parseFloat(u.length.value);
+   //     drawerList[i].angle = parseFloat(u.angle);
+//        drawerList[i].lineLength = parseFloat(u.length);
         
         drawerList[i].draw();
     }

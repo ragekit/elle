@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "",
     "scripts":{
-        "build": "browserify src/Main.js > app.js",
-        "start": "beefy --live src/Main.js"
+        "sync": "browser-sync start --server --files *",
+        "watchify": "watchify src/Main.js -o app.js --debug",
+        "start": "npm run watchify | npm run sync"
     },
   "devDependencies": {
       

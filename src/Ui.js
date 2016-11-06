@@ -1,27 +1,62 @@
+var container = document.querySelector(".options")
+var DomAngle = document.querySelector(".angle");
+var DomLength = document.querySelector(".length");
+    
+DomAngle.type = "range";
+// this.angle.style.position = "absolute";
+
+DomAngle.min = -Math.PI;
+DomAngle.max = Math.PI;
+DomAngle.step = 0.001;
+DomAngle.value = Math.PI /5;
+
+DomLength.type = "range";
+// this.length.style.position = "absolute";
+
+
+DomLength.min = 0.0;
+DomLength.max = 10;
+DomLength.step = 0.001;
+
+
+function Parameter (name,domEl){
+    this.name = name;
+    this.domElement = domEl;
+    this.value = parseFloat(domEl.value);
+}
+
+
 function Ui(){
     
-    this.container = document.querySelector(".options");
+    //mb do something like parameters[domel] = val; 
+    this.parameters = [];
+    this.parameters["angle"] = new Parameter("angle",DomAngle);
+    this.parameters["lineLength"] = new Parameter("lineLength",DomLength);
     
-    this.angle = document.querySelector(".angle");
-    this.angle.type = "range";
-   // this.angle.style.position = "absolute";
+    for(var param in this.parameters)
+        {        
+            (function(param){
+                
+            
+                
+            this.parameters[param].domElement.addEventListener("input",function(){
+            this.onValueChange(this.parameters[param]);
+            }.bind(this));
+            }.bind(this))(param)
+        }
 
-    this.angle.min = -Math.PI;
-    this.angle.max = Math.PI;
-    this.angle.step = 0.001;
-    this.angle.value = Math.PI /5;
-    console.log(this.angle.value);
-
-    this.length = document.querySelector(".length");
-    this.length.type = "range";
-   // this.length.style.position = "absolute";
-
-    
-    this.length.min = 0.0;
-    this.length.max = 10;
-    this.length.step = 0.001;
-    
-   
 }
+
+Ui.prototype.onValueChange = function(param){
+    
+    console.log(param.domElement.value);
+    
+    param.value = parseFloat(param.domElement.value);
+}
+
+Ui.prototype.getParam = function(name){
+     return this.parameters[name].value;
+}
+
 
 module.exports =  Ui;

@@ -1,3 +1,5 @@
+var Ui = require("./Ui");
+
 function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.l = lSystem;
     this.cameraPos = {x:0,y:0};
@@ -7,7 +9,7 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.position = {x:startpos.x,y:startpos.y}
     this.direction = -Math.PI /2;
     this.savedPosition = [];
-    this.angle = angle;
+    //this.angle = angle;
     this.ctx = context;
     this.jitter = jitter;
     this.done = false;
@@ -19,7 +21,8 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     //drag move parameters
     this.mouseDown = false;
     this.clickPosition;
-    
+    this.ui = new Ui();
+
     this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
     window.addEventListener("mousemove",this.onMouseMove.bind(this));
     window.addEventListener("mouseup",this.onMouseUp.bind(this));
@@ -27,16 +30,16 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.drawingFunctions = {
         "F" : () => {
             this.buffer.push({x:this.cameraPos.x + this.position.x,y:this.cameraPos.y + this.position.y});
-            this.position.x = this.position.x + Math.cos(this.direction) *this.lineLength;
-            this.position.y = this.position.y + Math.sin(this.direction) *this.lineLength;
+            this.position.x = this.position.x + Math.cos(this.direction) *this.ui.getParam("lineLength");
+            this.position.y = this.position.y + Math.sin(this.direction) *this.ui.getParam("lineLength");
             this.buffer.push({x:this.cameraPos.x + this.position.x,y:this.cameraPos.y + this.position.y});
         },
         "+" : () => {
-            this.direction += this.angle + (Math.random()*2 -1)*this.jitter;
+            this.direction += this.ui.getParam("angle") + (Math.random()*2 -1)*this.jitter;
 
         },
         "-" : () => {
-            this.direction -= this.angle + (Math.random()*2 -1)*this.jitter;
+            this.direction -= this.ui.getParam("angle") + (Math.random()*2 -1)*this.jitter;
             },
         "[" : () => {
             this.savedPosition.push({pos:{x:this.position.x,y:this.position.y},dir:this.direction});
