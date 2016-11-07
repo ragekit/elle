@@ -398,58 +398,65 @@ function Parameter (name,domEl){
 
 function Ui(owner){
     
-    //mb do something like parameters[domel] = val; 
-    this.parameters = [];
-    this.parameters["angle"] = new Parameter("angle",DomAngle);
-    this.parameters["lineLength"] = new Parameter("lineLength",DomLength);
     this.owner = owner;
     
-    this.listeners = []
+    this.parameters = [];
+    var registerParam = function(name,dom){
+        var param =new Parameter(name,dom);
+         this.parameters[name] = param;
+    }.bind(this);
     
-     for(var param in this.parameters)
-    {   
-       this.listeners[param] = this.onValueChange.bind(this,this.parameters[param]);
-    }
+       
+    registerParam("angle",DomAngle);
+    registerParam("lineLength",DomLength);
+        
+    this.onValueChange = this.onValueChange.bind(this);
     this.onMutateClick = this.onMutateClick.bind(this);
-
-    
-    
 }
-
-
-
-
 
 Ui.prototype.bindListener = function(){
     for(var param in this.parameters)
         {   
             this.parameters[param].domElement.value = this.parameters[param].value;
-            this.parameters[param].domElement.addEventListener("input",this.listeners[param]);  
+            this.parameters[param].domElement.addEventListener("input",this.onValueChange);  
         }
     
     DomMutate.addEventListener("click",this.onMutateClick);
 }
 
 Ui.prototype.onMutateClick = function(){
-    this.owner.mutateFromThis();
-    
+    this.owner.mutateFromThis();    
 }
 
 Ui.prototype.unbindListener = function(){
      for(var param in this.parameters)
         {        
-            this.parameters[param].domElement.removeEventListener("input",this.listeners[param]);
+            this.parameters[param].domElement.removeEventListener("input",this.onValueChange);
         }
     
     DomMutate.removeEventListener("click",this.onMutateClick);
 }
 
 
-Ui.prototype.onValueChange = function(param){
-    param.value = parseFloat(param.domElement.value);
-}.bind(this)
+Ui.prototype.onValueChange = function(e){
+    var param;
+    
+    for(var p in this.parameters)
+    {
+        if(this.parameters[p].domElement == e.target)
+            {
+                param = this.parameters[p];
+                break;
+            }
+    }
+    
+    param.value = parseFloat(e.target.value);
+}
 
 Ui.prototype.getParam = function(name){
+    
+    //console.log(this.parameters[name].value);
+    
      return this.parameters[name].value;
 }
 
