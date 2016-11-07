@@ -1,5 +1,8 @@
 var Ui = require("./Ui");
 
+
+var maxIteration = 5;
+
 function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.l = lSystem;
     this.cameraPos = {x:0,y:0};
@@ -21,7 +24,7 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     //drag move parameters
     this.mouseDown = false;
     this.clickPosition;
-    this.ui = new Ui();
+    this.ui = new Ui(this);
 
     this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
     window.addEventListener("mousemove",this.onMouseMove.bind(this));
@@ -63,7 +66,48 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
 
         },
     }
+    Drawer.list.push(this);
 }
+
+
+Drawer.list = [];
+
+
+Drawer.prototype.mutateFromThis = function (){
+     for (var i = 0; i < Drawer.list.length; i++) {
+         
+        if(Drawer.list[i] == this) continue;
+         
+        var clone = this.l.clone();
+        clone.mutate();
+        clone.generate(maxIteration);
+
+
+        Drawer.list[i].l = clone;
+
+        Drawer.list[i].reset();
+        Drawer.list[i].ctx.canvas.width = Drawer.list[i].ctx.canvas.width;
+    }
+}
+
+Drawer.mutateFromModel = function(baseSystem)
+{
+
+    for (var i = 0; i < Drawer.list.length; i++) {
+        var clone = baseSystem.clone();
+        clone.mutate();
+        clone.generate(maxIteration);
+
+
+        Drawer.list[i].l = clone;
+
+
+        Drawer.list[i].reset();
+        Drawer.list[i].ctx.canvas.width = Drawer.list[i].ctx.canvas.width;
+    }
+}
+
+
 Drawer.prototype.reset = function(){
     this.done = false;
     this.currentDrawIndex = 0;

@@ -1,6 +1,8 @@
 var container = document.querySelector(".options")
 var DomAngle = document.querySelector(".angle");
 var DomLength = document.querySelector(".length");
+
+var DomMutate = document.querySelector(".mutate");
     
 DomAngle.type = "range";
 // this.angle.style.position = "absolute";
@@ -19,6 +21,10 @@ DomLength.max = 10;
 DomLength.step = 0.001;
 
 
+//static Dom :
+
+
+
 function Parameter (name,domEl){
     this.name = name;
     this.domElement = domEl;
@@ -26,33 +32,58 @@ function Parameter (name,domEl){
 }
 
 
-function Ui(){
+function Ui(owner){
     
     //mb do something like parameters[domel] = val; 
     this.parameters = [];
     this.parameters["angle"] = new Parameter("angle",DomAngle);
     this.parameters["lineLength"] = new Parameter("lineLength",DomLength);
+    this.owner = owner;
     
-    for(var param in this.parameters)
-        {        
-            (function(param){
-                
-            
-                
-            this.parameters[param].domElement.addEventListener("input",function(){
-            this.onValueChange(this.parameters[param]);
-            }.bind(this));
-            }.bind(this))(param)
-        }
+    this.listeners = []
+    
+     for(var param in this.parameters)
+    {   
+       this.listeners[param] = this.onValueChange.bind(this,this.parameters[param]);
+    }
+    this.onMutateClick = this.onMutateClick.bind(this);
 
+    
+    
 }
+
+
+
+
+
+Ui.prototype.bindListener = function(){
+    for(var param in this.parameters)
+        {   
+            this.parameters[param].domElement.value = this.parameters[param].value;
+            this.parameters[param].domElement.addEventListener("input",this.listeners[param]);  
+        }
+    
+    DomMutate.addEventListener("click",this.onMutateClick);
+}
+
+Ui.prototype.onMutateClick = function(){
+    this.owner.mutateFromThis();
+    
+}
+
+Ui.prototype.unbindListener = function(){
+     for(var param in this.parameters)
+        {        
+            this.parameters[param].domElement.removeEventListener("input",this.listeners[param]);
+        }
+    
+    DomMutate.removeEventListener("click",this.onMutateClick);
+}
+
 
 Ui.prototype.onValueChange = function(param){
-    
-    console.log(param.domElement.value);
-    
     param.value = parseFloat(param.domElement.value);
-}
+}.bind(this)
 
 Ui.prototype.getParam = function(name){
      return this.parameters[name].value;

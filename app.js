@@ -1,6 +1,9 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var Ui = require("./Ui");
 
+
+var maxIteration = 5;
+
 function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.l = lSystem;
     this.cameraPos = {x:0,y:0};
@@ -22,7 +25,7 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     //drag move parameters
     this.mouseDown = false;
     this.clickPosition;
-    this.ui = new Ui();
+    this.ui = new Ui(this);
 
     this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
     window.addEventListener("mousemove",this.onMouseMove.bind(this));
@@ -64,7 +67,48 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
 
         },
     }
+    Drawer.list.push(this);
 }
+
+
+Drawer.list = [];
+
+
+Drawer.prototype.mutateFromThis = function (){
+     for (var i = 0; i < Drawer.list.length; i++) {
+         
+        if(Drawer.list[i] == this) continue;
+         
+        var clone = this.l.clone();
+        clone.mutate();
+        clone.generate(maxIteration);
+
+
+        Drawer.list[i].l = clone;
+
+        Drawer.list[i].reset();
+        Drawer.list[i].ctx.canvas.width = Drawer.list[i].ctx.canvas.width;
+    }
+}
+
+Drawer.mutateFromModel = function(baseSystem)
+{
+
+    for (var i = 0; i < Drawer.list.length; i++) {
+        var clone = baseSystem.clone();
+        clone.mutate();
+        clone.generate(maxIteration);
+
+
+        Drawer.list[i].l = clone;
+
+
+        Drawer.list[i].reset();
+        Drawer.list[i].ctx.canvas.width = Drawer.list[i].ctx.canvas.width;
+    }
+}
+
+
 Drawer.prototype.reset = function(){
     this.done = false;
     this.currentDrawIndex = 0;
@@ -227,96 +271,81 @@ String.prototype.setCharAt = function(index, character) {
 
 var elle = new L();
 var div;
-var drawerList = [];
-
-var maxIteration = 5;
+var selected;
 
 var plantInfos = document.querySelector(".plantInfos");
-
+ div = document.querySelector(".canvases");
+var canvases = div.querySelectorAll("canvas");
 function init(){
     elle.addVariables("XF");
     elle.addconstants("+-[]");
     elle.axiom = "X";
     elle.addRule("X","F-[[X]+X]+F[+FX]-X");
     elle.addRule("F","FF");
-    elle.generate(maxIteration);
+   // elle.generate(5);
 
-    div = document.querySelector(".canvases");
-
-    var canvases = div.querySelectorAll("canvas");
-
+resize();
     for (var i = 0; i < canvases.length; i++) {
         var c = canvases[i]
 
         var ctx = c.getContext("2d");
         var drawer = new Drawer(elle,ctx,{x:c.width/2,y:c.height/2},Math.PI/5,0);
-        drawerList.push(drawer);
         ctx.canvas.addEventListener("mousedown",onDrawerMouseClick.bind(drawer))
     }
-    resize();
-    mutateFromModel(elle);
+       
+
+    Drawer.mutateFromModel(elle);
 }
 
 function resize(){
 
     var containerBB = div.getBoundingClientRect();
 
-
-     for (var i = 0; i < drawerList.length; i++) {
-        var c = drawerList[i].ctx.canvas;
-        var flooredSqrt = Math.sqrt(drawerList.length);
+     for (var i = 0; i <canvases.length; i++) {
+        var c = canvases[i];
+        var flooredSqrt = Math.sqrt(canvases.length);
 
         var defaultWidth = Math.floor(containerBB.width/flooredSqrt);
         var defaultHeight = Math.floor(containerBB.height/flooredSqrt);
 
+         
          c.width = defaultWidth;
+         console.log(defaultHeight);
          c.height = defaultHeight;
          c.style.left = (defaultWidth * (i%flooredSqrt)) + "px";
          c.style.top = (defaultHeight * Math.floor(i/flooredSqrt)) + "px";
      }
 }
 
-function mutateFromModel(baseSystem)
-{
 
-    for (var i = 0; i < drawerList.length; i++) {
-        var clone = baseSystem.clone();
-        clone.mutate();
-        clone.generate(maxIteration);
-
-
-        drawerList[i].l = clone;
-
-
-        drawerList[i].reset();
-        drawerList[i].ctx.canvas.width = drawerList[i].ctx.canvas.width;
-    }
-}
 
 (function loop(time){
     var shittodrawlength = 0;
-    for (var i = 0; i < drawerList.length; i++) {
+    for (var i = 0; i < Drawer.list.length; i++) {
         //update UI
    //     drawerList[i].angle = parseFloat(u.angle);
 //        drawerList[i].lineLength = parseFloat(u.length);
 
-        drawerList[i].draw();
+        Drawer.list[i].draw();
     }
     requestAnimationFrame(loop);
 })(0);
 
 
 function onDrawerMouseClick(){
-    for (var i = 0; i < drawerList.length; i++) {
-        drawerList[i].ctx.canvas.classList.remove("selected");
+    
+    //this is the drawer clicked;
+    
+    for (var i = 0; i < Drawer.list.length; i++) {
+        Drawer.list[i].ctx.canvas.classList.remove("selected");
        // console.log(drawerList[i].l.rules);
-
+        Drawer.list[i].ui.unbindListener();
     }
     this.ctx.canvas.classList.add("selected");
-   // console.log(this.l.rules);
-
-  //  this.ctx.canvas.width -= 50;
-//     this.ctx.canvas.height -= 50;
+    this.ui.bindListener();
+    selected = this;
+    
+    
      plantInfos.innerHTML = "";
     //move to lsystem method;
     for(var i in this.l.rules){
@@ -327,7 +356,7 @@ function onDrawerMouseClick(){
 
 }
 
-
+//Ui.DomMutate.addEventListener("click",mutateFromModel(selected.l));
 
 window.onresize = resize;
 window.onload = init;
@@ -336,6 +365,8 @@ window.onload = init;
 var container = document.querySelector(".options")
 var DomAngle = document.querySelector(".angle");
 var DomLength = document.querySelector(".length");
+
+var DomMutate = document.querySelector(".mutate");
     
 DomAngle.type = "range";
 // this.angle.style.position = "absolute";
@@ -354,6 +385,10 @@ DomLength.max = 10;
 DomLength.step = 0.001;
 
 
+//static Dom :
+
+
+
 function Parameter (name,domEl){
     this.name = name;
     this.domElement = domEl;
@@ -361,33 +396,58 @@ function Parameter (name,domEl){
 }
 
 
-function Ui(){
+function Ui(owner){
     
     //mb do something like parameters[domel] = val; 
     this.parameters = [];
     this.parameters["angle"] = new Parameter("angle",DomAngle);
     this.parameters["lineLength"] = new Parameter("lineLength",DomLength);
+    this.owner = owner;
     
-    for(var param in this.parameters)
-        {        
-            (function(param){
-                
-            
-                
-            this.parameters[param].domElement.addEventListener("input",function(){
-            this.onValueChange(this.parameters[param]);
-            }.bind(this));
-            }.bind(this))(param)
-        }
+    this.listeners = []
+    
+     for(var param in this.parameters)
+    {   
+       this.listeners[param] = this.onValueChange.bind(this,this.parameters[param]);
+    }
+    this.onMutateClick = this.onMutateClick.bind(this);
 
+    
+    
 }
+
+
+
+
+
+Ui.prototype.bindListener = function(){
+    for(var param in this.parameters)
+        {   
+            this.parameters[param].domElement.value = this.parameters[param].value;
+            this.parameters[param].domElement.addEventListener("input",this.listeners[param]);  
+        }
+    
+    DomMutate.addEventListener("click",this.onMutateClick);
+}
+
+Ui.prototype.onMutateClick = function(){
+    this.owner.mutateFromThis();
+    
+}
+
+Ui.prototype.unbindListener = function(){
+     for(var param in this.parameters)
+        {        
+            this.parameters[param].domElement.removeEventListener("input",this.listeners[param]);
+        }
+    
+    DomMutate.removeEventListener("click",this.onMutateClick);
+}
+
 
 Ui.prototype.onValueChange = function(param){
-    
-    console.log(param.domElement.value);
-    
     param.value = parseFloat(param.domElement.value);
-}
+}.bind(this)
 
 Ui.prototype.getParam = function(name){
      return this.parameters[name].value;
