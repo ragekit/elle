@@ -3,6 +3,10 @@ var Ui = require("./Ui");
 
 var maxIteration = 5;
 
+//keep ref of all drawers
+Drawer.list = [];
+
+
 function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.l = lSystem;
     this.cameraPos = {x:0,y:0};
@@ -25,10 +29,6 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
     this.mouseDown = false;
     this.clickPosition;
     this.ui = new Ui(this);
-
-    this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
-    window.addEventListener("mousemove",this.onMouseMove.bind(this));
-    window.addEventListener("mouseup",this.onMouseUp.bind(this));
 
     this.drawingFunctions = {
         "F" : () => {
@@ -67,11 +67,14 @@ function Drawer(lSystem,context,startpos,angle,jitter = 0){
         },
     }
     Drawer.list.push(this);
+    this.bindListeners();
 }
 
-
-Drawer.list = [];
-
+Drawer.prototype.bindListeners = function(){
+    this.ctx.canvas.addEventListener("mousedown",this.onClick.bind(this));
+    window.addEventListener("mousemove",this.onMouseMove.bind(this));
+    window.addEventListener("mouseup",this.onMouseUp.bind(this));
+}
 
 Drawer.prototype.mutateFromThis = function (){
      for (var i = 0; i < Drawer.list.length; i++) {
@@ -123,6 +126,15 @@ Drawer.prototype.reset = function(){
 Drawer.prototype.onClick = function(e){
     this.clickPosition = {x:e.clientX,y:e.clientY};
     this.mouseDown = true;
+    
+    for (var i = 0; i < Drawer.list.length; i++) {
+        Drawer.list[i].ctx.canvas.classList.remove("selected");
+       // console.log(drawerList[i].l.rules);
+        Drawer.list[i].ui.unbindListener();
+    }
+    this.ctx.canvas.classList.add("selected");
+    this.ui.bindListener();
+    this.ui.showPlantInfos(this.l.rulesToString());
 }
 Drawer.prototype.onMouseMove = function(e){
     if(this.mouseDown)
@@ -146,9 +158,6 @@ Drawer.prototype.fillBuffer = function(){
     for (var i = 0; i < this.l.output.length; i++) {
 
         if(this.drawingFunctions[this.l.output[i]] == undefined) continue;
-
-
-
         this.drawingFunctions[this.l.output[i]].call(this);
         nbOfDrawActions ++;
 

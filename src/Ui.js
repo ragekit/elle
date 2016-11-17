@@ -1,11 +1,9 @@
 var container = document.querySelector(".options")
 var DomAngle = document.querySelector(".angle");
 var DomLength = document.querySelector(".length");
-
 var DomMutate = document.querySelector(".mutate");
     
 DomAngle.type = "range";
-// this.angle.style.position = "absolute";
 
 DomAngle.min = -Math.PI;
 DomAngle.max = Math.PI;
@@ -13,7 +11,6 @@ DomAngle.step = 0.001;
 DomAngle.value = Math.PI /5;
 
 DomLength.type = "range";
-// this.length.style.position = "absolute";
 
 
 DomLength.min = 0.0;
@@ -21,8 +18,7 @@ DomLength.max = 10;
 DomLength.step = 0.001;
 
 
-//static Dom :
-
+var PlantInfos = document.querySelector(".plantInfos");
 
 
 function Parameter (name,domEl){
@@ -62,6 +58,10 @@ Ui.prototype.bindListener = function(){
 
 Ui.prototype.onMutateClick = function(){
     this.owner.mutateFromThis();    
+}
+
+Ui.prototype.showPlantInfos = function(string){
+    PlantInfos.innerHTML = string;
 }
 
 Ui.prototype.unbindListener = function(){

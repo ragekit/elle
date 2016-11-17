@@ -1,3 +1,5 @@
+var Util = require("./Util");
+
 var lol = 0;
 
 function L(){
@@ -60,6 +62,19 @@ L.prototype.clone = function(){
     return ret;
 }
 
+L.prototype.rulesToString = function(){
+    
+    var r =  "";
+    
+    for(var i in this.rules){
+        r += i + "<br/>";
+        r += this.rules[i] +"<br/>";
+
+    }
+    
+    return r;
+}
+
 L.prototype.mutate = function(){
     
     // var string = "";
@@ -72,7 +87,7 @@ L.prototype.mutate = function(){
    var replacement = this.variables.concat(this.constants);
    
    
-   this.rules["X"] = string.setCharAt(Math.floor(Math.random()*string.length),replacement[Math.floor(Math.random()*replacement.length)]);
+   this.rules["X"] = Util.setCharAt(string,Math.floor(Math.random()*string.length),replacement[Math.floor(Math.random()*replacement.length)]);
 
 }
 
